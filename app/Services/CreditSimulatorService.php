@@ -7,10 +7,14 @@ use App\Services\Integrations\GosatApiClient;
 class CreditSimulatorService
 {
     private GosatApiClient $gosatApiClient;
+    private LoanCalculatorService $loanCalculatorService;
+
+    private array $summaryOffers = [];
 
     public function __construct()
     {
         $this->gosatApiClient = new GosatApiClient();
+        $this->loanCalculatorService = new LoanCalculatorService();
     }
 
     /**
@@ -66,5 +70,33 @@ class CreditSimulatorService
                     &&  $simulateValue <= $modality['conditions']['maxValue'];
             });
         });
+    }
+
+    public function calculateOffers(float $simulateValue, array $offersAvailable) : void
+    {
+        $this->summaryOffers = $offersAvailable;
+
+        foreach ($offersAvailable as $keyInst => $institution) {
+            foreach ($institution['modalities'] as $keyModality => $eachModality) {
+                $calculated = $this->loanCalculatorService->calculatePriceTable(
+                    $simulateValue,
+                    $eachModality['conditions']['interestPerMonth'],
+                    $eachModality['conditions']['minInstQty']
+                );
+
+                $this->summaryOffers[$keyInst]['modalities'][$keyModality]['calculated'] = [
+                    'totalPaid' => $calculated['total_paid'],
+                    'instNumber' => $eachModality['conditions']['minInstQty'],
+                ];
+            }
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getSummaryOffers() : array
+    {
+        return $this->summaryOffers;
     }
 }

@@ -84,9 +84,3 @@ Utilize um dos CPFs listados previamente no sistema para simulações válidas.
 - Docker / Docker Compose
 - PostgreSQL
 - PHPUnit (para testes)
-
----
-
-## 📄 Licença
-
-Este projeto está sob a licença [MIT](LICENSE).

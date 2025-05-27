@@ -12,6 +12,20 @@ services:
         - "8001:80"
       networks:
           - credit-offer-network
+    db:
+      image: postgres:latest
+      restart: always
+      environment:
+        POSTGRES_USER: creditoffer
+        POSTGRES_PASSWORD: 'main@7777Aabbccdd'
+        POSTGRES_DB: creditoffer_db
+      ports:
+        - "5432:5432"
+      volumes:
+        - ./db/db-data:/var/lib/postgresql/data
+        - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      networks:
+        - credit-offer-network
 networks:
   credit-offer-network:
     driver: bridge

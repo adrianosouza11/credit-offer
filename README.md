@@ -78,6 +78,12 @@ Utilize um dos CPFs listados previamente no sistema para simulações válidas.
 
 ---
 
+## 🗂 Organização do Projeto
+
+O desenvolvimento deste projeto foi conduzido com base na aba **Projects** do GitHub, utilizando o modelo **Kanban** para organização das tarefas. Todas as atividades foram devidamente planejadas, categorizadas e concluídas conforme registrado por lá. Essa abordagem ajudou a manter uma visão clara do progresso e das prioridades ao longo do desenvolvimento.
+
+---
+
 ## 🛠 Tecnologias Utilizadas
 
 - PHP / Laravel

@@ -18,17 +18,4 @@ class PostSimulateRequest extends FormRequest
           'simulateValue' => 'required|numeric'
         ];
     }
-
-    protected function passedValidation(): void
-    {
-        if($this->has('simulateValue')) {
-            $simulateValue = $this->input('simulateValue');
-
-            $formatSimulateValue = (int) round(floatval($simulateValue) * 100);
-
-            $this->merge([
-               'simulateValue' =>  $formatSimulateValue
-            ]);
-        }
-    }
 }

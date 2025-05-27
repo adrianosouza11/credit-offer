@@ -64,16 +64,29 @@ class SimulateCreditApiTest extends TestCase
             ->assertJsonValidationErrors(['simulateValue']);
     }
 
-//    public function test_should_return_empty_when_external_api_does_not_find_results()
-//    {
-//        Http::fake([ 'dev.gosat.org/api/v1/simulacao/oferta' =>  Http::response([
-//            'QntParcelaMin' => 18,
-//            'QntParcelaMax' => 60,
-//            'valorMin' => 12000,
-//            'valorMax' => 21250,
-//            'juroMes' => 0.0118
-//        ], 200)]);
-//
-//        $this->postJson('/api/simulate');
-//    }
+    public function test_must_return_maximum_3_credit_offers_cpf_value_ordered_by_lowest_value_api()
+    {
+        $data = ['cpf' => '11111111111', 'simulateValue' => 7000];
+
+        $this->postJson('/api/simulate-credit', $data)
+            ->assertStatus(200)
+            ->assertJson([
+                [
+                    'instituicaoFinanceira' => 'Financeira Assert',
+                    'modalidadeCredito' => 'crédito pessoal',
+                    'valorAPagar' => 8769.56,
+                    'valorSolicitado' => 7000,
+                    'taxaJuros' => 0.0365,
+                    'qntParcelas' => 12
+                ],
+                [
+                    'instituicaoFinanceira' => 'Banco PingApp',
+                    'modalidadeCredito' => 'crédito pessoal',
+                    'valorAPagar' => 9450.63,
+                    'valorSolicitado' => 7000,
+                    'taxaJuros' => 0.0495,
+                    'qntParcelas' => 12
+                ],
+            ]);
+    }
 }

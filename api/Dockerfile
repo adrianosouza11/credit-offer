@@ -19,6 +19,10 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure pgsql && \
     docker-php-ext-install pdo_pgsql pgsql zip
 
+RUN docker-php-ext-install bcmath
+
+RUN docker-php-ext-enable bcmath
+
 WORKDIR /var/www
 COPY . .
 
@@ -29,22 +33,18 @@ RUN rm -rf /var/www/storage/* /var/www/bootstrap/cache/*
 RUN curl -sS https://getcomposer.org/installer | php && \
     mv composer.phar /usr/local/bin/composer
 
-# Instalar dependências do Laravel
-RUN composer install --no-dev --optimize-autoloader
-
 # Definir permissões
 RUN chown -R www-data:www-data /var/www \
-    && chmod -R 775 /var/www \
-    && chown -R www-data /var/www/storage
+    && chmod -R 775 /var/www
+
+# Definir permissão para cache e storage
+RUN chown -R www-data:www-data /var/www/storage \
+    && chown -R www-data:www-data /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage \
+    && chmod -R 775 /var/www/bootstrap/cache
 
 # Copia o arquivo de configuração do Nginx
 COPY ./nginx/laravel.conf /etc/nginx/sites-available/default
-
-# Gerar chave do Laravel e rodar as migrações (opcional, pode ser rodado em tempo de execução)
-RUN php artisan key:generate
-
-#RUN php artisan key:generate && \
-#    php artisan migrate --force
 
 # Expor as portas para Nginx e PHP-FPM
 EXPOSE 80 9000

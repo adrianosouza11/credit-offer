@@ -1,6 +1,7 @@
 # Projeto de Simulação de Ofertas de Crédito
 
 Este projeto é uma API para simulação de ofertas de crédito. Utiliza Docker para facilitar o ambiente de desenvolvimento, incluindo execução de migrations, testes e simulações via endpoint.
+Para o cálculo foi utilizado o método de amortização baseado na Tabela Price.
 
 ## 🚀 Começando
 

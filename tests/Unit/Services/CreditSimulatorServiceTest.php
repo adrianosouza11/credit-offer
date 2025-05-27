@@ -102,4 +102,35 @@ class CreditSimulatorServiceTest extends \Tests\TestCase
             'instNumber' => 12
         ],$result[1]['modalities'][0]['calculated']);
     }
+
+    public function test_must_return_three_best_offers()
+    {
+        //Act
+        $service = new CreditSimulatorService();
+
+        $result = $service->getThreeBestOffers('11111111111', 7000);
+
+        //Assert
+        $this->assertLessThanOrEqual(3, count($result));
+
+        $this->assertEquals([
+            'institutionName' => 'Financeira Assert',
+            'institutionCode' => 2,
+            'modalityName' => 'crédito pessoal',
+            'modalityCode' => "a50ed2ed-2b8b-4cc7-ac95-71a5568b34ce",
+            "modalityMonthInt" => 0.0365,
+            'totalPaid' => 8769.56,
+            'instNumber' => 12,
+        ],$result[0]);
+
+        $this->assertEquals([
+            "institutionName" => "Banco PingApp",
+            "institutionCode" => 1,
+            "modalityName" => "crédito pessoal",
+            "modalityCode" => "3",
+            "modalityMonthInt" => 0.0495,
+            'totalPaid' => 9450.63,
+            'instNumber' => 12
+        ],$result[1]);
+    }
 }

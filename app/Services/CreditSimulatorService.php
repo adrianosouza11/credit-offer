@@ -30,6 +30,7 @@ class CreditSimulatorService
         $offers = [];
 
         foreach ($institutions->instituicoes as $instKey => $instValue) {
+            $modalities = [];
             foreach($instValue->modalidades as $keyMod => $eachMod) {
                 $listOffer = $this->gosatApiClient->listOffer($cpf, $instValue->id, $eachMod->cod)->object();
 
@@ -38,7 +39,7 @@ class CreditSimulatorService
                     'institutionName' => $instValue->nome
                 ];
 
-                $offers[$instKey]['modalities'][$keyMod] = [
+                $modalities[$keyMod] = [
                     'code' => $eachMod->cod,
                     'name' => $eachMod->nome,
                     'conditions' => [
@@ -50,6 +51,8 @@ class CreditSimulatorService
                     ]
                 ];
             }
+
+            $offers[$instKey]['modalities'] = $modalities;
         }
 
         return $offers;
@@ -60,16 +63,23 @@ class CreditSimulatorService
      * @param int $simulateValue
      * @return array
      */
-    public function filterAvailableOffers(string $cpf, int $simulateValue) : array
+    public function filterAvailableOffers(string $cpf, float $simulateValue) : array
     {
         $offers = $this->getOffersByCpf($cpf);
 
-        return array_filter($offers, function ($institution) use ($simulateValue) {
-            return array_filter($institution['modalities'], function ($modality) use ($simulateValue) {
+        foreach ($offers as $keyInst => $institution) {
+            $modalities = array_filter($institution['modalities'], function ($modality) use ($simulateValue) {
                 return $simulateValue >= $modality['conditions']['minValue']
                     &&  $simulateValue <= $modality['conditions']['maxValue'];
             });
-        });
+
+            if(!count($modalities))
+                unset($offers[$keyInst]);
+            else
+                $offers[$keyInst]['modalities'] = $modalities;
+        }
+
+        return $offers;
     }
 
     public function calculateOffers(float $simulateValue, array $offersAvailable) : void
@@ -98,5 +108,40 @@ class CreditSimulatorService
     public function getSummaryOffers() : array
     {
         return $this->summaryOffers;
+    }
+
+    /**
+     * @param string $cpf
+     * @param float $simulateValue
+     * @return array
+     */
+    public function getThreeBestOffers(string $cpf, float $simulateValue) : array
+    {
+        $availableOffers = $this->filterAvailableOffers($cpf, $simulateValue);
+
+        if(!$availableOffers)
+            return [];
+
+        $this->calculateOffers($simulateValue, $availableOffers);
+
+        $flattened = collect($this->summaryOffers)->flatMap(function($institution) {
+            return collect($institution['modalities'])->map(function($modality) use ($institution){
+                return [
+                    "institutionName" => $institution['institutionName'],
+                    "institutionCode" => $institution['institutionCode'],
+                    "modalityName"    => $modality['name'],
+                    "modalityCode"    => $modality['code'],
+                    "modalityMonthInt" => $modality['conditions']['interestPerMonth'],
+                    "totalPaid"       => $modality['calculated']['totalPaid'] ?? 0,
+                    "instNumber"      => $modality['calculated']['instNumber'] ?? 0,
+                ];
+            });
+        });
+
+        return $flattened
+            ->sortBy('totalPaid')
+            ->take(3)
+            ->values()
+            ->all();
     }
 }

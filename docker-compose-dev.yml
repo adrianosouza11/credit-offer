@@ -1,0 +1,19 @@
+services:
+    api-service:
+      build:
+        context: ./api
+        dockerfile: Dockerfile.dev
+      env_file:
+          - ./api/.env
+      volumes:
+        - ./api:/var/www
+        - ./api/vendor:/var/www/vendor
+      ports:
+        - "8001:80"
+      networks:
+          - credit-offer-network
+networks:
+  credit-offer-network:
+    driver: bridge
+volumes:
+  db-data:
